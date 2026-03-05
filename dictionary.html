@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>HebrewLib — Мой Словарь</title>
+    <style>
+        :root { 
+            --primary: #0038A8; 
+            --accent: #ffcc00;
+            --bg: #f4f7f9; 
+            --white: #ffffff;
+            --text: #1c1c1e;
+        }
+        
+        body { 
+            font-family: -apple-system, sans-serif; 
+            background: var(--bg); 
+            margin: 0; padding: 15px; 
+            direction: rtl; color: var(--text);
+        }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { color: var(--primary); margin: 0; font-size: 28px; }
+        .header p { color: #666; margin: 5px 0; font-size: 14px; }
+
+        /* Форма ввода */
+        .add-section { 
+            background: var(--white); border-radius: 16px; padding: 20px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 25px;
+        }
+        
+        select, input, textarea { 
+            width: 100%; padding: 12px; margin: 8px 0; 
+            border: 1.5px solid #eee; border-radius: 12px; 
+            font-size: 16px; box-sizing: border-box; outline: none;
+        }
+        
+        select:focus, input:focus { border-color: var(--primary); }
+        
+        .row { display: flex; gap: 10px; }
+        
+        .btn-main { 
+            background: var(--primary); color: white; border: none; 
+            padding: 15px; border-radius: 12px; width: 100%; 
+            font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;
+        }
+
+        /* Фильтры */
+        .filters { 
+            display: flex; gap: 8px; margin-bottom: 15px; 
+            overflow-x: auto; padding-bottom: 5px; 
+        }
+        .filter-btn { 
+            background: #e0e0e0; padding: 8px 16px; border-radius: 20px; 
+            font-size: 13px; cursor: pointer; white-space: nowrap; border: none;
+        }
+        .filter-btn.active { background: var(--primary); color: white; }
+
+        /* Карточки слов */
+        .word-card { 
+            background: white; padding: 18px; border-radius: 15px; 
+            margin-bottom: 12px; border-right: 6px solid var(--primary); 
+            position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        
+        .word-main { display: flex; justify-content: space-between; align-items: center; }
+        .word-he { font-size: 24px; font-weight: 800; color: var(--primary); }
+        .btn-speak { background: none; border: none; font-size: 22px; cursor: pointer; }
+        
+        .word-trans { font-size: 16px; color: #555; margin: 4px 0; }
+        .word-translation { font-size: 18px; font-weight: 600; color: #000; }
+        
+        .details { 
+            margin-top: 10px; font-size: 13px; color: #666; 
+            display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid #f0f0f0; padding-top: 10px;
+        }
+        .detail-item b { color: var(--primary); }
+
+        .example { 
+            background: #fff9e6; padding: 10px; border-radius: 8px; 
+            margin-top: 12px; font-size: 14px; border-right: 3px solid var(--accent);
+        }
+
+        .btn-del { position: absolute; left: 15px; top: 15px; color: #ccc; cursor: pointer; border: none; background: none; }
+        .btn-del:hover { color: #ff3b30; }
+
+        .empty-state { text-align: center; color: #999; margin-top: 40px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>HebrewLib</h1>
+    <p>Мой личный академический словарь</p>
+</div>
+
+<div class="add-section">
+    <select id="type" onchange="toggleFields()">
+        <option value="noun">Существительное (שם עצם)</option>
+        <option value="verb">Глагол (פועל)</option>
+        <option value="adj">Прилагательное (שם תואר)</option>
+        <option value="other">Предлог / Другое</option>
+    </select>
+    
+    <input type="text" id="hebrew" placeholder="Слово на иврите">
+    <input type="text" id="transcription" placeholder="Транскрипция [звучание]">
+    <input type="text" id="translation" placeholder="Перевод на русский">
+    
+    <div id="noun-fields" class="row">
+        <select id="gender">
+            <option value="м.р.">Муж. род</option>
+            <option value="ж.р.">Жен. род</option>
+        </select>
+        <input type="text" id="plural" placeholder="Мн. число">
+    </div>
+
+    <div id="verb-fields" style="display:none;">
+        <input type="text" id="root" placeholder="Корень (Шореш)">
+    </div>
+
+    <textarea id="example" placeholder="Пример предложения..."></textarea>
+    <button class="btn-main" onclick="addWord()">Добавить в библиотеку</button>
+</div>
+
+<div class="filters">
+    <button class="filter-btn active" onclick="filter('all', this)">Все</button>
+    <button class="filter-btn" onclick="filter('noun', this)">Существительные</button>
+    <button class="filter-btn" onclick="filter('verb', this)">Глаголы</button>
+    <button class="filter-btn" onclick="filter('adj', this)">Прилагательные</button>
+</div>
+
+<div id="dict-list"></div>
+
+<script>
+    let dictionary = JSON.parse(localStorage.getItem('hebrewLibData') || '[]');
+
+    function toggleFields() {
+        const type = document.getElementById('type').value;
+        document.getElementById('noun-fields').style.display = (type === 'noun' || type === 'adj') ? 'flex' : 'none';
+        document.getElementById('verb-fields').style.display = (type === 'verb') ? 'block' : 'none';
+    }
+
+    function addWord() {
+        const he = document.getElementById('hebrew').value.trim();
+        const tr = document.getElementById('translation').value.trim();
+        
+        if (!he || !tr) {
+            alert("Пожалуйста, введите слово и его перевод");
+            return;
+        }
+
+        const word = {
+            id: Date.now(),
+            type: document.getElementById('type').value,
+            he: he,
+            transcription: document.getElementById('transcription').value,
+            translation: tr,
+            gender: document.getElementById('gender').value,
+            plural: document.getElementById('plural').value,
+            root: document.getElementById('root').value,
+            example: document.getElementById('example').value
+        };
+
+        dictionary.push(word);
+        save();
+        render();
+        clearForm();
+    }
+
+    function save() {
+        localStorage.setItem('hebrewLibData', JSON.stringify(dictionary));
+    }
+
+    function clearForm() {
+        document.querySelectorAll('input, textarea').forEach(el => el.value = '');
+    }
+
+    function deleteWord(id) {
+        if(confirm("Удалить это слово?")) {
+            dictionary = dictionary.filter(w => w.id !== id);
+            save();
+            render();
+        }
+    }
+
+    function speak(text) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'he-IL';
+        window.speechSynthesis.speak(utterance);
+    }
+
+    function render(typeFilter = 'all') {
+        const list = document.getElementById('dict-list');
+        list.innerHTML = '';
+        
+        const filtered = typeFilter === 'all' ? dictionary : dictionary.filter(w => w.type === typeFilter);
+
+        if (filtered.length === 0) {
+            list.innerHTML = '<div class="empty-state">Пока здесь ничего нет. Добавьте первое слово!</div>';
+            return;
+        }
+
+        filtered.slice().reverse().forEach(w => {
+            const card = document.createElement('div');
+            card.className = 'word-card';
+            
+            let extraInfo = '';
+            if (w.type === 'noun' || w.type === 'adj') {
+                extraInfo = `<div class="detail-item"><b>Род:</b> ${w.gender}</div>
+                             <div class="detail-item"><b>Мн.ч:</b> ${w.plural || '—'}</div>`;
+            } else if (w.type === 'verb') {
+                extraInfo = `<div class="detail-item"><b>Корень:</b> ${w.root || '—'}</div>`;
+            }
+
+            card.innerHTML = `
+                <button class="btn-del" onclick="deleteWord(${w.id})">✕</button>
+                <div class="word-main">
+                    <div class="word-he">${w.he}</div>
+                    <button class="btn-speak" onclick="speak('${w.he.replace(/'/g, "\\'")}')">🔊</button>
+                </div>
+                <div class="word-trans">[${w.transcription || '...'}]</div>
+                <div class="word-translation">${w.translation}</div>
+                <div class="details">${extraInfo}</div>
+                ${w.example ? `<div class="example"><b>Пример:</b> ${w.example}</div>` : ''}
+            `;
+            list.appendChild(card);
+        });
+    }
+
+    function filter(type, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        render(type);
+    }
+
+    render();
+</script>
+
+</body>
+</html>
