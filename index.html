@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <title>HebLib AI-Powered</title>
+    <title>HebLib Pro 2.0</title>
     <style>
         :root { --primary: #0038A8; --accent: #ffcc00; --bg: #f4f7f9; --white: #ffffff; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; }
@@ -11,82 +11,105 @@
         .nav-back a { text-decoration: none; color: var(--primary); font-size: 14px; font-weight: bold; }
         .add-section { background: var(--white); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
         .input-group { display: flex; gap: 8px; margin-bottom: 10px; }
-        input, select { width: 100%; padding: 12px; margin: 5px 0; border: 1.5px solid #eee; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
-        .btn-magic { background: var(--accent); border: none; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 20px; transition: transform 0.1s; }
-        .btn-magic:active { transform: scale(0.9); }
+        input, select { width: 100%; padding: 12px; margin: 5px 0; border: 1.5px solid #eee; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
+        .btn-magic { background: var(--accent); border: none; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 20px; }
+        .btn-gram { background: #e0e7ff; border: none; color: var(--primary); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 12px; margin-top: -5px; margin-bottom: 10px; display: block; width: fit-content; }
         .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; margin-top: 10px; }
-        .word-card { background: white; padding: 15px; border-radius: 12px; margin-top: 10px; border-right: 5px solid var(--primary); position: relative; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .tag { display: inline-block; background: #eef2ff; color: var(--primary); padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 5px; font-weight: bold; }
-        .loading { opacity: 0.5; pointer-events: none; }
+        .word-card { background: white; padding: 15px; border-radius: 12px; margin-top: 10px; border-right: 5px solid var(--primary); position: relative; }
+        .tag { display: inline-block; background: #eef2ff; color: var(--primary); padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 5px; }
+        .loading-pulse { animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="nav-back">
-    <a href="https://jriverbend.github.io/FunHebrew/">← В новости</a>
+    <a href="https://jriverbend.github.io/FunHebrew/">← Вернуться в новости</a>
 </div>
 
-<div class="add-section" id="form-container">
+<div class="add-section">
     <div class="input-group">
         <input type="text" id="hebrew" placeholder="Слово на иврите...">
-        <button class="btn-magic" onclick="magicTranslate()">✨</button>
+        <button class="btn-magic" id="magicBtn" onclick="superMagic()">✨</button>
     </div>
 
-    <input type="text" id="translation" placeholder="Перевод (заполнится само)">
-    <input type="text" id="transcription" placeholder="Транскрипция">
+    <button class="btn-gram" onclick="openPealim()">🔍 Посмотреть формы и корни (Pealim)</button>
+
+    <input type="text" id="translation" placeholder="Перевод (авто)">
+    <input type="text" id="transcription" placeholder="Транскрипция (введи сам)">
     
     <div style="display: flex; gap: 10px;">
-        <select id="gender">
+        <select id="gender" onchange="predictPlural()">
             <option value="м.р.">Муж. род</option>
             <option value="ж.р.">Жен. род</option>
         </select>
-        <input type="text" id="plural" placeholder="Мн. число (если есть)">
+        <input type="text" id="plural" placeholder="Мн. число (авто-прогноз)">
     </div>
 
-    <button class="btn-save" onclick="addWord()">Сохранить в словарь</button>
+    <button class="btn-save" onclick="addWord()">Сохранить слово</button>
 </div>
 
 <div id="dict-list"></div>
 
 <script>
-    async function magicTranslate() {
+    // 1. Открытие Pealim для проверки грамматики
+    function openPealim() {
+        const word = document.getElementById('hebrew').value.trim();
+        if(!word) return alert("Сначала введи слово!");
+        window.open(`https://www.pealim.com/search/?q=${word}`, '_blank');
+    }
+
+    // 2. Умное предсказание множественного числа
+    function predictPlural() {
+        const word = document.getElementById('hebrew').value.trim();
+        const gender = document.getElementById('gender').value;
+        const pluralField = document.getElementById('plural');
+        
+        if (!word) return;
+
+        if (gender === "ж.р.") {
+            // Если кончается на ה, убираем её и ставим ות
+            if (word.endsWith('ה')) {
+                pluralField.value = word.slice(0, -1) + 'ות';
+            } else {
+                pluralField.value = word + 'ות';
+            }
+        } else {
+            pluralField.value = word + 'ים';
+        }
+    }
+
+    // 3. Основная магия перевода
+    async function superMagic() {
         const word = document.getElementById('hebrew').value.trim();
         if (!word) return;
 
-        const btn = document.querySelector('.btn-magic');
-        const container = document.getElementById('form-container');
-        
-        btn.innerText = "⏳";
-        container.classList.add('loading');
+        const btn = document.getElementById('magicBtn');
+        btn.classList.add('loading-pulse');
 
         try {
-            // Используем MyMemory API для перевода (бесплатно и без ключей)
             const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=he|ru`);
             const data = await res.json();
-            const translatedText = data.responseData.translatedText;
+            document.getElementById('translation').value = data.responseData.translatedText;
 
-            // Заполняем перевод
-            document.getElementById('translation').value = translatedText;
-
-            // Логика определения рода (упрощенная для иврита: если кончается на 'ה' или 'ת' — часто ж.р.)
+            // Авто-определение рода для предсказания
             if (word.endsWith('ה') || word.endsWith('ת')) {
                 document.getElementById('gender').value = "ж.р.";
             } else {
                 document.getElementById('gender').value = "м.р.";
             }
-
-            // Транскрипцию API не дает напрямую, поэтому оставим поле для быстрой правки 
-            // или поставим заглушку, чтобы ты видел, что магия сработала
-            document.getElementById('transcription').focus();
+            
+            predictPlural(); // Запускаем прогноз множественного числа
+            document.getElementById('transcription').focus(); // Прыгаем на транскрипцию
 
         } catch (err) {
-            alert("Связь с облаком прервалась. Попробуй еще раз.");
+            console.error(err);
         } finally {
-            btn.innerText = "✨";
-            container.classList.remove('loading');
+            btn.classList.remove('loading-pulse');
         }
     }
 
+    // Сохранение и рендер (как в прошлых версиях)
     let dictionary = JSON.parse(localStorage.getItem('hebrewLibData') || '[]');
 
     function addWord() {
@@ -94,16 +117,15 @@
         const tr = document.getElementById('translation').value.trim();
         if (!he || !tr) return;
 
-        const word = {
+        dictionary.push({
             id: Date.now(),
             he: he,
             tr: tr,
             ts: document.getElementById('transcription').value,
             g: document.getElementById('gender').value,
             p: document.getElementById('plural').value
-        };
+        });
 
-        dictionary.push(word);
         localStorage.setItem('hebrewLibData', JSON.stringify(dictionary));
         render();
         ["hebrew", "translation", "transcription", "plural"].forEach(id => document.getElementById(id).value = '');
@@ -116,11 +138,11 @@
             const card = document.createElement('div');
             card.className = 'word-card';
             card.innerHTML = `
-                <div style="font-size:22px; font-weight:bold; color:var(--primary);">${w.he}</div>
-                <div style="font-size:18px;">${w.tr} <span style="color:gray; font-size:14px;">[${w.ts}]</span></div>
-                <div style="margin-top:8px;">
+                <div style="font-size:20px; font-weight:bold; color:var(--primary);">${w.he}</div>
+                <div>${w.tr} <small style="color:gray;">[${w.ts}]</small></div>
+                <div style="margin-top:5px;">
                     <span class="tag">${w.g}</span>
-                    ${w.p ? `<span class="tag">Мн: ${w.p}</span>` : ''}
+                    <span class="tag">Мн.ч: ${w.p}</span>
                 </div>
             `;
             list.appendChild(card);
