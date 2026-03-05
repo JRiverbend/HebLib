@@ -13,85 +13,27 @@
     <title>HebLib — Академический Словарь</title>
 
     <style>
-        :root { 
-            --primary: #0038A8; 
-            --accent: #ffcc00;
-            --bg: #f4f7f9; 
-            --white: #ffffff;
-            --text: #1c1c1e;
-        }
-        
-        body { 
-            font-family: -apple-system, sans-serif; 
-            background: var(--bg); 
-            margin: 0; padding: 15px; 
-            direction: rtl; color: var(--text);
-        }
-
+        :root { --primary: #0038A8; --accent: #ffcc00; --bg: #f4f7f9; --white: #ffffff; --text: #1c1c1e; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; color: var(--text); }
         .nav-back { text-align: center; margin-bottom: 10px; }
         .nav-back a { text-decoration: none; color: var(--primary); font-size: 14px; font-weight: bold; }
-
         .header { text-align: center; margin-bottom: 20px; }
         .header h1 { color: var(--primary); margin: 0; font-size: 28px; }
-        .header p { color: #666; margin: 5px 0; font-size: 14px; }
-
-        .add-section { 
-            background: var(--white); border-radius: 16px; padding: 20px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 25px;
-        }
+        .add-section { background: var(--white); border-radius: 16px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 25px; }
         
-        select, input, textarea { 
-            width: 100%; padding: 12px; margin: 8px 0; 
-            border: 1.5px solid #eee; border-radius: 12px; 
-            font-size: 16px; box-sizing: border-box; outline: none;
-        }
+        /* Стили для поля ввода с кнопкой перевода */
+        .input-group { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+        .input-main { flex-grow: 1; padding: 12px; border: 1.5px solid #eee; border-radius: 12px; font-size: 18px; outline: none; }
+        .btn-lookup { background: var(--accent); border: none; padding: 12px; border-radius: 12px; cursor: pointer; font-size: 18px; }
         
-        select:focus, input:focus { border-color: var(--primary); }
+        select, input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1.5px solid #eee; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
         .row { display: flex; gap: 10px; }
+        .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         
-        .btn-main { 
-            background: var(--primary); color: white; border: none; 
-            padding: 15px; border-radius: 12px; width: 100%; 
-            font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;
-        }
-
-        .filters { 
-            display: flex; gap: 8px; margin-bottom: 15px; 
-            overflow-x: auto; padding-bottom: 5px; 
-        }
-        .filter-btn { 
-            background: #e0e0e0; padding: 8px 16px; border-radius: 20px; 
-            font-size: 13px; cursor: pointer; white-space: nowrap; border: none;
-        }
-        .filter-btn.active { background: var(--primary); color: white; }
-
-        .word-card { 
-            background: white; padding: 18px; border-radius: 15px; 
-            margin-bottom: 12px; border-right: 6px solid var(--primary); 
-            position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            text-align: right;
-        }
-        
-        .word-main { display: flex; justify-content: space-between; align-items: center; }
+        .word-card { background: white; padding: 18px; border-radius: 15px; margin-bottom: 12px; border-right: 6px solid var(--primary); position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.04); text-align: right; }
         .word-he { font-size: 24px; font-weight: 800; color: var(--primary); }
         .btn-speak { background: none; border: none; font-size: 22px; cursor: pointer; }
-        
-        .word-trans { font-size: 16px; color: #555; margin: 4px 0; }
-        .word-translation { font-size: 18px; font-weight: 600; color: #000; }
-        
-        .details { 
-            margin-top: 10px; font-size: 13px; color: #666; 
-            display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid #f0f0f0; padding-top: 10px;
-        }
-        .detail-item b { color: var(--primary); }
-
-        .example { 
-            background: #fff9e6; padding: 10px; border-radius: 8px; 
-            margin-top: 12px; font-size: 14px; border-right: 3px solid var(--accent);
-        }
-
         .btn-del { position: absolute; left: 15px; top: 15px; color: #ccc; cursor: pointer; border: none; background: none; }
-        .empty-state { text-align: center; color: #999; margin-top: 40px; }
     </style>
 </head>
 <body>
@@ -102,26 +44,26 @@
 
 <div class="header">
     <h1>HebLib</h1>
-    <p>Моя база знаний иврита</p>
 </div>
 
 <div class="add-section">
     <select id="type" onchange="toggleFields()">
-        <option value="noun">Существительное (שם עצם)</option>
+        <option value="noun">Существительное (שם עצм)</option>
         <option value="verb">Глагол (פועל)</option>
         <option value="adj">Прилагательное (שם תואר)</option>
-        <option value="other">Предлог / Другое</option>
+        <option value="other">Другое</option>
     </select>
     
-    <input type="text" id="hebrew" placeholder="Слово на иврите">
-    <input type="text" id="transcription" placeholder="Транскрипция [звучание]">
-    <input type="text" id="translation" placeholder="Перевод на русский">
+    <div class="input-group">
+        <input type="text" id="hebrew" class="input-main" placeholder="Слово на иврите">
+        <button class="btn-lookup" onclick="lookupWord()" title="Найти перевод">🔍</button>
+    </div>
+
+    <input type="text" id="translation" placeholder="Перевод (нажми на лупу выше)">
+    <input type="text" id="transcription" placeholder="Транскрипция">
     
     <div id="noun-fields" class="row">
-        <select id="gender">
-            <option value="м.р.">Муж. род</option>
-            <option value="ж.р.">Жен. род</option>
-        </select>
+        <select id="gender"><option value="м.р.">Муж. род</option><option value="ж.р.">Жен. род</option></select>
         <input type="text" id="plural" placeholder="Мн. число">
     </div>
 
@@ -129,20 +71,20 @@
         <input type="text" id="root" placeholder="Корень (Шореш)">
     </div>
 
-    <textarea id="example" placeholder="Пример использования..."></textarea>
-    <button class="btn-main" onclick="addWord()">Сохранить слово</button>
-</div>
-
-<div class="filters">
-    <button class="filter-btn active" onclick="filter('all', this)">Все</button>
-    <button class="filter-btn" onclick="filter('noun', this)">Существительные</button>
-    <button class="filter-btn" onclick="filter('verb', this)">Глаголы</button>
+    <button class="btn-save" onclick="addWord()">Сохранить в базу</button>
 </div>
 
 <div id="dict-list"></div>
 
 <script>
     let dictionary = JSON.parse(localStorage.getItem('hebrewLibData') || '[]');
+
+    function lookupWord() {
+        const word = document.getElementById('hebrew').value.trim();
+        if (!word) return alert("Сначала введи слово!");
+        // Открываем Reverso Context — лучший словарь для иврита
+        window.open(`https://context.reverso.net/translation/hebrew-russian/${word}`, '_blank');
+    }
 
     function toggleFields() {
         const type = document.getElementById('type').value;
@@ -153,7 +95,7 @@
     function addWord() {
         const he = document.getElementById('hebrew').value.trim();
         const tr = document.getElementById('translation').value.trim();
-        if (!he || !tr) return alert("Заполни иврит и перевод!");
+        if (!he || !tr) return alert("Иврит и перевод обязательны!");
 
         const word = {
             id: Date.now(),
@@ -163,22 +105,19 @@
             translation: tr,
             gender: document.getElementById('gender').value,
             plural: document.getElementById('plural').value,
-            root: document.getElementById('root').value,
-            example: document.getElementById('example').value
+            root: document.getElementById('root').value
         };
 
         dictionary.push(word);
         localStorage.setItem('hebrewLibData', JSON.stringify(dictionary));
         render();
-        clearForm();
-    }
-
-    function clearForm() {
-        document.querySelectorAll('input, textarea').forEach(el => el.value = '');
+        document.getElementById('hebrew').value = '';
+        document.getElementById('translation').value = '';
+        document.getElementById('hebrew').focus();
     }
 
     function deleteWord(id) {
-        if(confirm("Удалить слово?")) {
+        if(confirm("Удалить?")) {
             dictionary = dictionary.filter(w => w.id !== id);
             localStorage.setItem('hebrewLibData', JSON.stringify(dictionary));
             render();
@@ -192,44 +131,25 @@
         window.speechSynthesis.speak(utterance);
     }
 
-    function render(typeFilter = 'all') {
+    function render() {
         const list = document.getElementById('dict-list');
         list.innerHTML = '';
-        const filtered = typeFilter === 'all' ? dictionary : dictionary.filter(w => w.type === typeFilter);
-
-        if (filtered.length === 0) {
-            list.innerHTML = '<div class="empty-state">Словарь пуст</div>';
-            return;
-        }
-
-        filtered.slice().reverse().forEach(w => {
+        dictionary.slice().reverse().forEach(w => {
             const card = document.createElement('div');
             card.className = 'word-card';
-            let extra = w.type === 'noun' ? `<div class="detail-item"><b>Род:</b> ${w.gender} | <b>Мн.ч:</b> ${w.plural || '-'}</div>` : 
-                        w.type === 'verb' ? `<div class="detail-item"><b>Корень:</b> ${w.root || '-'}</div>` : '';
-
             card.innerHTML = `
                 <button class="btn-del" onclick="deleteWord(${w.id})">✕</button>
-                <div class="word-main">
+                <div style="display:flex; justify-content:space-between;">
                     <div class="word-he">${w.he}</div>
-                    <button class="btn-speak" onclick="speak('${w.he.replace(/'/g, "\\'")}')">🔊</button>
+                    <button class="btn-speak" onclick="speak('${w.he}')">🔊</button>
                 </div>
-                <div class="word-trans">[${w.transcription}]</div>
-                <div class="word-translation">${w.translation}</div>
-                <div class="details">${extra}</div>
-                ${w.example ? `<div class="example"><b>Пример:</b> ${w.example}</div>` : ''}
+                <div style="font-weight:bold;">${w.translation}</div>
+                <div style="color:#666; font-size:13px;">[${w.transcription}]</div>
             `;
             list.appendChild(card);
         });
     }
-
-    function filter(type, btn) {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        render(type);
-    }
     render();
 </script>
-
 </body>
 </html>
