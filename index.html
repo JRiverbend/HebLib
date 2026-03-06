@@ -3,83 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <title>HebLib Pro 3.0 — Verbs Edition</title>
+    <title>HebLib — Мой Букварь</title>
     <style>
-        :root { --primary: #0038A8; --accent: #ffcc00; --bg: #f4f7f9; --white: #ffffff; }
-        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; direction: rtl; }
-        .nav-back { text-align: center; margin-bottom: 10px; }
-        .nav-back a { text-decoration: none; color: var(--primary); font-size: 14px; font-weight: bold; }
-        .add-section { background: var(--white); border-radius: 16px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        :root { --primary: #0038A8; --bg: #f0f2f5; --white: #ffffff; --text: #1c1c1e; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; direction: rtl; color: var(--text); }
         
-        .type-selector { display: flex; gap: 5px; margin-bottom: 10px; }
-        .type-btn { flex: 1; padding: 8px; border-radius: 8px; border: 1.5px solid #eee; background: white; cursor: pointer; font-size: 14px; }
+        .nav-back { text-align: center; margin-bottom: 15px; }
+        .nav-back a { text-decoration: none; color: var(--primary); font-weight: bold; font-size: 14px; }
+
+        .add-section { background: var(--white); border-radius: 20px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 25px; }
+        
+        .type-selector { display: flex; gap: 8px; margin-bottom: 15px; }
+        .type-btn { flex: 1; padding: 10px; border-radius: 12px; border: 1.5px solid #eee; background: white; cursor: pointer; font-size: 13px; font-weight: 600; }
         .type-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .input-group { display: flex; gap: 8px; margin-bottom: 10px; }
-        input { width: 100%; padding: 12px; margin: 5px 0; border: 1.5px solid #eee; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
-        .btn-magic { background: var(--accent); border: none; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 20px; }
+        input, textarea { width: 100%; padding: 14px; margin: 6px 0; border: 1.5px solid #efefef; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; background: #f9f9f9; }
+        input:focus { border-color: var(--primary); background: #fff; }
+
+        .helper-row { display: flex; gap: 8px; margin: 10px 0; }
+        .btn-helper { flex: 1; background: #e8ebf0; color: #444; border: none; padding: 12px; border-radius: 12px; font-size: 13px; cursor: pointer; font-weight: 600; }
+
+        .btn-save { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 15px; width: 100%; font-size: 18px; font-weight: bold; margin-top: 15px; box-shadow: 0 4px 12px rgba(0,56,168,0.2); }
+
+        /* Карточка-Букварь */
+        .word-card { background: white; border-radius: 25px; margin-top: 20px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.06); position: relative; border: 1px solid #eee; }
+        .card-img { width: 100%; height: 200px; object-fit: cover; background: #fafafa; display: block; }
+        .card-content { padding: 20px; text-align: center; }
         
-        .helper-row { display: flex; gap: 5px; margin-bottom: 10px; }
-        .btn-helper { flex: 1; background: #e0e7ff; color: var(--primary); border: none; padding: 10px; border-radius: 10px; font-size: 12px; cursor: pointer; font-weight: bold; }
+        .card-he { font-size: 36px; font-weight: 800; color: var(--primary); margin: 0; }
+        .card-ts { font-size: 18px; color: #666; margin: 5px 0 15px 0; font-style: italic; }
+        .card-tr { font-size: 22px; font-weight: 700; color: #000; margin-bottom: 10px; }
         
-        .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; margin-top: 10px; }
+        .card-meta { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tag { background: #f0f2f5; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; color: #555; }
+
+        .card-example { background: #fff9e6; padding: 15px; border-radius: 15px; font-size: 15px; line-height: 1.5; color: #444; border-right: 4px solid var(--primary); text-align: right; }
         
-        .word-card { background: white; padding: 15px; border-radius: 12px; margin-top: 10px; border-right: 5px solid var(--primary); position: relative; }
-        .verb-card { border-right-color: #2ecc71; }
-        .btn-del { position: absolute; left: 10px; top: 10px; background: none; border: none; color: #ccc; font-size: 18px; cursor: pointer; }
-        .tag { display: inline-block; background: #eef2ff; color: var(--primary); padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 5px; }
-        .verb-tag { background: #eafff2; color: #27ae60; }
+        .btn-del { position: absolute; left: 15px; top: 15px; background: rgba(255,255,255,0.8); border: none; color: #ff4444; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; z-index: 10; }
     </style>
 </head>
 <body>
 
-<div class="nav-back">
-    <a href="https://jriverbend.github.io/FunHebrew/">← В новости</a>
-</div>
+<div class="nav-back"><a href="https://jriverbend.github.io/FunHebrew/">← Мои Новости</a></div>
 
 <div class="add-section">
     <div class="type-selector">
-        <button id="btn-noun" class="type-btn active" onclick="setType('noun')">Сущ./Прил.</button>
-        <button id="btn-verb" class="type-btn" onclick="setType('verb')">Глагол (פועל)</button>
+        <button id="btn-noun" class="type-btn active" onclick="setType('noun')">Сущ.</button>
+        <button id="btn-verb" class="type-btn" onclick="setType('verb')">Глагол</button>
+        <button id="btn-prep" class="type-btn" onclick="setType('prep')">Предлог</button>
     </div>
 
-    <div class="input-group">
-        <input type="text" id="hebrew" placeholder="Слово / Инфинитив...">
-        <button class="btn-magic" id="magicBtn" onclick="superMagic()">✨</button>
-    </div>
-
-    <div class="helper-row">
-        <button class="btn-helper" onclick="openContext()">📖 Контекст</button>
-        <button class="btn-helper" onclick="openPealim()">📊 Спряжения</button>
-    </div>
-
-    <input type="text" id="translation" placeholder="Перевод">
-    <input type="text" id="transcription" placeholder="Транскрипция">
+    <input type="text" id="hebrew" placeholder="Слово на иврите">
+    <input type="text" id="transcription" placeholder="Транскрипция (как звучит)">
+    <input type="text" id="translation" placeholder="Значение (перевод)">
     
+    <div class="helper-row">
+        <button class="btn-helper" onclick="openContext()">Контекст</button>
+        <button class="btn-helper" onclick="openPealim()">Грамматика</button>
+    </div>
+
     <div id="noun-fields" style="display: flex; gap: 10px;">
-        <input type="text" id="gender" placeholder="Род (м/ж)" style="width: 30%;">
+        <input type="text" id="gender" placeholder="Род">
         <input type="text" id="plural" placeholder="Мн. число">
     </div>
 
     <div id="verb-fields" style="display: none; gap: 10px;">
-        <input type="text" id="root" placeholder="Корень (שורש)">
-        <input type="text" id="binyan" placeholder="Биньян (пааль, пиэль...)">
+        <input type="text" id="root" placeholder="Корень">
+        <input type="text" id="binyan" placeholder="Биньян">
     </div>
 
-    <button class="btn-save" onclick="addWord()">Сохранить</button>
+    <div id="prep-fields" style="display: none;">
+        <input type="text" id="prep-forms" placeholder="Особенности (напр. со мной, с тобой)">
+    </div>
+
+    <input type="text" id="img-url" placeholder="Ссылка на картинку (необязательно)">
+    <textarea id="example" placeholder="Пример предложения..." rows="2"></textarea>
+
+    <button class="btn-save" onclick="addWord()">Добавить в букварь</button>
 </div>
 
 <div id="dict-list"></div>
 
 <script>
     let currentType = 'noun';
+    let dictionary = JSON.parse(localStorage.getItem('hebrewLibData') || '[]');
 
     function setType(type) {
         currentType = type;
-        document.getElementById('btn-noun').classList.toggle('active', type === 'noun');
-        document.getElementById('btn-verb').classList.toggle('active', type === 'verb');
+        document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-' + type).classList.add('active');
+        
         document.getElementById('noun-fields').style.display = type === 'noun' ? 'flex' : 'none';
         document.getElementById('verb-fields').style.display = type === 'verb' ? 'flex' : 'none';
+        document.getElementById('prep-fields').style.display = type === 'prep' ? 'block' : 'none';
     }
 
     function openContext() {
@@ -92,47 +108,37 @@
         if(w) window.open(`https://www.pealim.com/search/?q=${encodeURIComponent(w)}`, '_blank');
     }
 
-    async function superMagic() {
-        const word = document.getElementById('hebrew').value.trim();
-        if (!word) return;
-        const btn = document.getElementById('magicBtn');
-        btn.innerText = "⏳";
-        try {
-            const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=he|ru`);
-            const data = await res.json();
-            document.getElementById('translation').value = data.responseData.translatedText;
-        } catch (e) { alert("Ошибка связи"); } 
-        finally { btn.innerText = "✨"; }
-    }
-
-    let dictionary = JSON.parse(localStorage.getItem('hebrewLibData') || '[]');
-
     function addWord() {
         const h = document.getElementById('hebrew').value.trim();
         const t = document.getElementById('translation').value.trim();
-        if (!h || !t) return;
-        
+        if (!h || !t) return alert("Заполни слово и значение!");
+
         const entry = {
             id: Date.now(),
             type: currentType,
-            he: h, tr: t, 
-            ts: document.getElementById('transcription').value,
-            // Данные сущ
+            he: h, ts: document.getElementById('transcription').value, tr: t,
+            img: document.getElementById('img-url').value,
+            ex: document.getElementById('example').value,
             g: document.getElementById('gender').value,
             p: document.getElementById('plural').value,
-            // Данные глагола
             r: document.getElementById('root').value,
-            b: document.getElementById('binyan').value
+            b: document.getElementById('binyan').value,
+            pf: document.getElementById('prep-forms').value
         };
-        
+
         dictionary.push(entry);
         localStorage.setItem('hebrewLibData', JSON.stringify(dictionary));
         render();
-        ["hebrew", "translation", "transcription", "plural", "gender", "root", "binyan"].forEach(id => document.getElementById(id).value = '');
+        clearForm();
+    }
+
+    function clearForm() {
+        const ids = ['hebrew', 'transcription', 'translation', 'img-url', 'example', 'gender', 'plural', 'root', 'binyan', 'prep-forms'];
+        ids.forEach(id => document.getElementById(id).value = '');
     }
 
     function deleteWord(id) {
-        if(confirm("Удалить?")) {
+        if(confirm("Удалить карточку?")) {
             dictionary = dictionary.filter(w => w.id !== id);
             localStorage.setItem('hebrewLibData', JSON.stringify(dictionary));
             render();
@@ -143,18 +149,23 @@
         const list = document.getElementById('dict-list');
         list.innerHTML = '';
         dictionary.slice().reverse().forEach(w => {
-            const isVerb = w.type === 'verb';
             const card = document.createElement('div');
-            card.className = `word-card ${isVerb ? 'verb-card' : ''}`;
+            card.className = 'word-card';
+            
+            let metaTags = '';
+            if(w.type === 'noun') metaTags = `<span class="tag">${w.g}</span><span class="tag">Мн: ${w.p}</span>`;
+            if(w.type === 'verb') metaTags = `<span class="tag">Корень: ${w.r}</span><span class="tag">${w.b}</span>`;
+            if(w.type === 'prep') metaTags = `<span class="tag">${w.pf}</span>`;
+
             card.innerHTML = `
                 <button class="btn-del" onclick="deleteWord(${w.id})">✕</button>
-                <div style="font-size:22px; font-weight:bold; color:var(--primary);">${w.he}</div>
-                <div style="font-size:18px;">${w.tr} <span style="color:gray; font-size:14px;">[${w.ts}]</span></div>
-                <div style="margin-top:8px;">
-                    ${isVerb ? 
-                        `<span class="tag verb-tag">гл.</span><span class="tag">Корень: ${w.r || '—'}</span><span class="tag">${w.b || ''}</span>` : 
-                        `<span class="tag">${w.g || 'р.'}</span><span class="tag">Мн: ${w.p || '—'}</span>`
-                    }
+                ${w.img ? `<img src="${w.img}" class="card-img" onerror="this.style.display='none'">` : ''}
+                <div class="card-content">
+                    <p class="card-he">${w.he}</p>
+                    <p class="card-ts">[${w.ts}]</p>
+                    <p class="card-tr">${w.tr}</p>
+                    <div class="card-meta">${metaTags}</div>
+                    ${w.ex ? `<div class="card-example"><b>Пример:</b><br>${w.ex}</div>` : ''}
                 </div>
             `;
             list.appendChild(card);
