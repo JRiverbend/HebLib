@@ -3,22 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <title>HebLib Pro 2.2</title>
+    <title>HebLib Pro 3.0 — Verbs Edition</title>
     <style>
         :root { --primary: #0038A8; --accent: #ffcc00; --bg: #f4f7f9; --white: #ffffff; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 10px; direction: rtl; }
         .nav-back { text-align: center; margin-bottom: 10px; }
         .nav-back a { text-decoration: none; color: var(--primary); font-size: 14px; font-weight: bold; }
         .add-section { background: var(--white); border-radius: 16px; padding: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        
+        .type-selector { display: flex; gap: 5px; margin-bottom: 10px; }
+        .type-btn { flex: 1; padding: 8px; border-radius: 8px; border: 1.5px solid #eee; background: white; cursor: pointer; font-size: 14px; }
+        .type-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
         .input-group { display: flex; gap: 8px; margin-bottom: 10px; }
-        input, select { width: 100%; padding: 12px; margin: 5px 0; border: 1.5px solid #eee; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
+        input { width: 100%; padding: 12px; margin: 5px 0; border: 1.5px solid #eee; border-radius: 12px; font-size: 16px; box-sizing: border-box; outline: none; }
         .btn-magic { background: var(--accent); border: none; padding: 10px 15px; border-radius: 12px; cursor: pointer; font-size: 20px; }
+        
         .helper-row { display: flex; gap: 5px; margin-bottom: 10px; }
-        .btn-helper { flex: 1; background: #e0e7ff; color: var(--primary); border: none; padding: 10px; border-radius: 10px; font-size: 12px; cursor: pointer; font-weight: bold; text-align: center; text-decoration: none; }
+        .btn-helper { flex: 1; background: #e0e7ff; color: var(--primary); border: none; padding: 10px; border-radius: 10px; font-size: 12px; cursor: pointer; font-weight: bold; }
+        
         .btn-save { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-size: 18px; font-weight: bold; margin-top: 10px; }
-        .word-card { background: white; padding: 15px; border-radius: 12px; margin-top: 10px; border-right: 5px solid var(--primary); box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; text-align: right; }
-        .btn-del { position: absolute; left: 10px; top: 10px; background: none; border: none; color: #ccc; font-size: 18px; cursor: pointer; padding: 5px; }
+        
+        .word-card { background: white; padding: 15px; border-radius: 12px; margin-top: 10px; border-right: 5px solid var(--primary); position: relative; }
+        .verb-card { border-right-color: #2ecc71; }
+        .btn-del { position: absolute; left: 10px; top: 10px; background: none; border: none; color: #ccc; font-size: 18px; cursor: pointer; }
         .tag { display: inline-block; background: #eef2ff; color: var(--primary); padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-left: 5px; }
+        .verb-tag { background: #eafff2; color: #27ae60; }
     </style>
 </head>
 <body>
@@ -28,39 +38,53 @@
 </div>
 
 <div class="add-section">
+    <div class="type-selector">
+        <button id="btn-noun" class="type-btn active" onclick="setType('noun')">Сущ./Прил.</button>
+        <button id="btn-verb" class="type-btn" onclick="setType('verb')">Глагол (פועל)</button>
+    </div>
+
     <div class="input-group">
-        <input type="text" id="hebrew" placeholder="Слово на иврите...">
+        <input type="text" id="hebrew" placeholder="Слово / Инфинитив...">
         <button class="btn-magic" id="magicBtn" onclick="superMagic()">✨</button>
     </div>
 
     <div class="helper-row">
-        <button class="btn-helper" onclick="openContext()">📖 Транскрипция</button>
-        <button class="btn-helper" onclick="openPealim()">📊 Грамматика</button>
+        <button class="btn-helper" onclick="openContext()">📖 Контекст</button>
+        <button class="btn-helper" onclick="openPealim()">📊 Спряжения</button>
     </div>
 
     <input type="text" id="translation" placeholder="Перевод">
     <input type="text" id="transcription" placeholder="Транскрипция">
     
-    <div style="display: flex; gap: 10px;">
-        <select id="gender">
-            <option value="м.р.">Муж. род</option>
-            <option value="ж.р.">Жен. род</option>
-        </select>
+    <div id="noun-fields" style="display: flex; gap: 10px;">
+        <input type="text" id="gender" placeholder="Род (м/ж)" style="width: 30%;">
         <input type="text" id="plural" placeholder="Мн. число">
     </div>
 
-    <button class="btn-save" onclick="addWord()">Сохранить слово</button>
+    <div id="verb-fields" style="display: none; gap: 10px;">
+        <input type="text" id="root" placeholder="Корень (שורש)">
+        <input type="text" id="binyan" placeholder="Биньян (пааль, пиэль...)">
+    </div>
+
+    <button class="btn-save" onclick="addWord()">Сохранить</button>
 </div>
 
 <div id="dict-list"></div>
 
 <script>
-    // Reverso Context — самый надежный вариант
+    let currentType = 'noun';
+
+    function setType(type) {
+        currentType = type;
+        document.getElementById('btn-noun').classList.toggle('active', type === 'noun');
+        document.getElementById('btn-verb').classList.toggle('active', type === 'verb');
+        document.getElementById('noun-fields').style.display = type === 'noun' ? 'flex' : 'none';
+        document.getElementById('verb-fields').style.display = type === 'verb' ? 'flex' : 'none';
+    }
+
     function openContext() {
         const w = document.getElementById('hebrew').value.trim();
-        if(w) {
-            window.open(`https://context.reverso.net/translation/hebrew-russian/${encodeURIComponent(w)}`, '_blank');
-        } else { alert("Введи слово!"); }
+        if(w) window.open(`https://context.reverso.net/translation/hebrew-russian/${encodeURIComponent(w)}`, '_blank');
     }
 
     function openPealim() {
@@ -77,7 +101,6 @@
             const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(word)}&langpair=he|ru`);
             const data = await res.json();
             document.getElementById('translation').value = data.responseData.translatedText;
-            document.getElementById('gender').value = (word.endsWith('ה') || word.endsWith('ת')) ? "ж.р." : "м.р.";
         } catch (e) { alert("Ошибка связи"); } 
         finally { btn.innerText = "✨"; }
     }
@@ -89,20 +112,27 @@
         const t = document.getElementById('translation').value.trim();
         if (!h || !t) return;
         
-        dictionary.push({
+        const entry = {
             id: Date.now(),
+            type: currentType,
             he: h, tr: t, 
             ts: document.getElementById('transcription').value,
+            // Данные сущ
             g: document.getElementById('gender').value,
-            p: document.getElementById('plural').value
-        });
+            p: document.getElementById('plural').value,
+            // Данные глагола
+            r: document.getElementById('root').value,
+            b: document.getElementById('binyan').value
+        };
+        
+        dictionary.push(entry);
         localStorage.setItem('hebrewLibData', JSON.stringify(dictionary));
         render();
-        ["hebrew", "translation", "transcription", "plural"].forEach(id => document.getElementById(id).value = '');
+        ["hebrew", "translation", "transcription", "plural", "gender", "root", "binyan"].forEach(id => document.getElementById(id).value = '');
     }
 
     function deleteWord(id) {
-        if(confirm("Удалить это слово?")) {
+        if(confirm("Удалить?")) {
             dictionary = dictionary.filter(w => w.id !== id);
             localStorage.setItem('hebrewLibData', JSON.stringify(dictionary));
             render();
@@ -113,15 +143,18 @@
         const list = document.getElementById('dict-list');
         list.innerHTML = '';
         dictionary.slice().reverse().forEach(w => {
+            const isVerb = w.type === 'verb';
             const card = document.createElement('div');
-            card.className = 'word-card';
+            card.className = `word-card ${isVerb ? 'verb-card' : ''}`;
             card.innerHTML = `
                 <button class="btn-del" onclick="deleteWord(${w.id})">✕</button>
                 <div style="font-size:22px; font-weight:bold; color:var(--primary);">${w.he}</div>
                 <div style="font-size:18px;">${w.tr} <span style="color:gray; font-size:14px;">[${w.ts}]</span></div>
                 <div style="margin-top:8px;">
-                    <span class="tag">${w.g}</span>
-                    ${w.p ? `<span class="tag">Мн: ${w.p}</span>` : ''}
+                    ${isVerb ? 
+                        `<span class="tag verb-tag">гл.</span><span class="tag">Корень: ${w.r || '—'}</span><span class="tag">${w.b || ''}</span>` : 
+                        `<span class="tag">${w.g || 'р.'}</span><span class="tag">Мн: ${w.p || '—'}</span>`
+                    }
                 </div>
             `;
             list.appendChild(card);
